@@ -1,1 +1,49 @@
+from flask import Flask, request, jsonify
+import math
 
+app = Flask(EcoSync - AI-Powered Carbon Footprint Tracker & Offset Platform)
+
+# Constants for carbon footprint calculations (in kg CO2 per unit)
+CARBON_PER_KWH = 0.5  # Average carbon per kWh of electricity
+CARBON_PER_LITER_GASOLINE = 2.31  # Carbon per liter of gasoline
+CARBON_PER_KG_WASTE = 0.5  # Carbon per kg of waste
+
+def calculate_carbon_footprint(electricity_usage, gasoline_usage, waste_generated):
+    """
+    Calculate the total carbon footprint based on user inputs.
+    :param electricity_usage: in kWh
+    :param gasoline_usage: in liters
+    :param waste_generated: in kg
+    :return: Total carbon footprint in kg CO2
+    """
+    electricity_footprint = electricity_usage * CARBON_PER_KWH
+    transportation_footprint = gasoline_usage * CARBON_PER_LITER_GASOLINE
+    waste_footprint = waste_generated * CARBON_PER_KG_WASTE
+
+    total_footprint = electricity_footprint + transportation_footprint + waste_footprint
+    return round(total_footprint, 2)
+
+@app.route('/calculate', methods=['POST'])
+def calculate():
+    """
+    Flask API endpoint to calculate carbon footprint.
+    Expects JSON input with electricity_usage, gasoline_usage, and waste_generated.
+    """
+    data = request.get_json()
+
+    if not data or 'electricity_usage' not in data or 'gasoline_usage' not in data or 'waste_generated' not in data:
+        return jsonify({"error": "Missing data. Please provide electricity_usage, gasoline_usage, and waste_generated."}), 400
+
+    try:
+        electricity_usage = float(data['electricity_usage'])
+        gasoline_usage = float(data['gasoline_usage'])
+        waste_generated = float(data['waste_generated'])
+
+        total_footprint = calculate_carbon_footprint(electricity_usage, gasoline_usage, waste_generated)
+        return jsonify({"carbon_footprint_kg_co2": total_footprint}), 200
+
+    except ValueError:
+        return jsonify({"error": "Invalid input. Please provide numeric values."}), 400
+
+if __name__ == '__main__':
+    app.run(debug=True)
